@@ -186,7 +186,6 @@ class QoS(virtual.QoS):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._vrestore_count = 0
 
     def append(self, message, delivery_tag):
         delivery = message.delivery_info
@@ -233,10 +232,7 @@ class QoS(virtual.QoS):
             return pipe.zrem(self.unacked_index_key, delivery_tag) \
                        .hdel(self.unacked_key, delivery_tag)
 
-    def restore_visible(self, start=0, num=10, interval=10):
-        self._vrestore_count += 1
-        if (self._vrestore_count - 1) % interval:
-            return
+    def restore_visible(self, start=0, num=10):
         with self.channel.conn_or_acquire() as client:
             ceil = time() - self.visibility_timeout
             try:
